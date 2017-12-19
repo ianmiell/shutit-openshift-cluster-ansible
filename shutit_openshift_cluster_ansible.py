@@ -51,51 +51,51 @@ fi
     vb.memory = "''' + memory + '''"
   end
 
-  config.vm.define "openshiftansible1" do |openshiftansible1|
-    openshiftansible1.vm.box = ''' + '"' + vagrant_image + '"' + '''
-    openshiftansible1.vm.hostname = "openshiftansible1.vagrant.test"
+  config.vm.define "master1" do |master1|
+    master1.vm.box = ''' + '"' + vagrant_image + '"' + '''
+    master1.vm.hostname = "master1.vagrant.test"
     config.vm.provider :virtualbox do |vb|
       vb.name = "shutit_openshift_cluster_ansible_1"
     end
   end
-  config.vm.define "openshiftansible2" do |openshiftansible2|
-    openshiftansible2.vm.box = ''' + '"' + vagrant_image + '"' + '''
-    openshiftansible2.vm.hostname = "openshiftansible2.vagrant.test"
+  config.vm.define "master2" do |master2|
+    master2.vm.box = ''' + '"' + vagrant_image + '"' + '''
+    master2.vm.hostname = "master2.vagrant.test"
     config.vm.provider :virtualbox do |vb|
       vb.name = "shutit_openshift_cluster_ansible_2"
     end
   end
-  config.vm.define "openshiftansible3" do |openshiftansible3|
-    openshiftansible3.vm.box = ''' + '"' + vagrant_image + '"' + '''
-    openshiftansible3.vm.hostname = "openshiftansible3.vagrant.test"
+  config.vm.define "etcd1" do |etcd1|
+    etcd1.vm.box = ''' + '"' + vagrant_image + '"' + '''
+    etcd1.vm.hostname = "etcd1.vagrant.test"
     config.vm.provider :virtualbox do |vb|
       vb.name = "shutit_openshift_cluster_ansible_3"
     end
   end
-  config.vm.define "openshiftansible4" do |openshiftansible4|
-    openshiftansible4.vm.box = ''' + '"' + vagrant_image + '"' + '''
-    openshiftansible4.vm.hostname = "openshiftansible4.vagrant.test"
+  config.vm.define "etcd2" do |etcd2|
+    etcd2.vm.box = ''' + '"' + vagrant_image + '"' + '''
+    etcd2.vm.hostname = "etcd2.vagrant.test"
     config.vm.provider :virtualbox do |vb|
       vb.name = "shutit_openshift_cluster_ansible_4"
     end
   end
-  config.vm.define "openshiftansible5" do |openshiftansible5|
-    openshiftansible5.vm.box = ''' + '"' + vagrant_image + '"' + '''
-    openshiftansible5.vm.hostname = "openshiftansible5.vagrant.test"
+  config.vm.define "etcd3" do |etcd3|
+    etcd3.vm.box = ''' + '"' + vagrant_image + '"' + '''
+    etcd3.vm.hostname = "etcd3.vagrant.test"
     config.vm.provider :virtualbox do |vb|
       vb.name = "shutit_openshift_cluster_ansible_5"
     end
   end
-  config.vm.define "openshiftansible6" do |openshiftansible6|
-    openshiftansible6.vm.box = ''' + '"' + vagrant_image + '"' + '''
-    openshiftansible6.vm.hostname = "openshiftansible6.vagrant.test"
+  config.vm.define "node1" do |node1|
+    node1.vm.box = ''' + '"' + vagrant_image + '"' + '''
+    node1.vm.hostname = "node1.vagrant.test"
     config.vm.provider :virtualbox do |vb|
       vb.name = "shutit_openshift_cluster_ansible_6"
     end
   end
-  config.vm.define "openshiftansible7" do |openshiftansible7|
-    openshiftansible7.vm.box = ''' + '"' + vagrant_image + '"' + '''
-    openshiftansible7.vm.hostname = "openshiftansible7.vagrant.test"
+  config.vm.define "node2" do |node2|
+    node2.vm.box = ''' + '"' + vagrant_image + '"' + '''
+    node2.vm.hostname = "node2.vagrant.test"
     config.vm.provider :virtualbox do |vb|
       vb.name = "shutit_openshift_cluster_ansible_7"
     end
@@ -103,72 +103,72 @@ fi
 end''')
 		pw = shutit.get_env_pass()
 		try:
-			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " openshiftansible1",{'assword for':pw,'assword:':pw},timeout=99999)
+			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " master1",{'assword for':pw,'assword:':pw},timeout=99999)
 		except NameError:
-			shutit.multisend('vagrant up openshiftansible1',{'assword for':pw,'assword:':pw},timeout=99999)
-		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^openshiftansible1 | awk '{print $2}'""") != 'running':
-			shutit.pause_point("machine: openshiftansible1 appears not to have come up cleanly")
+			shutit.multisend('vagrant up master1',{'assword for':pw,'assword:':pw},timeout=99999)
+		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^master1 | awk '{print $2}'""") != 'running':
+			shutit.pause_point("machine: master1 appears not to have come up cleanly")
 		try:
-			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " openshiftansible2",{'assword for':pw,'assword:':pw},timeout=99999)
+			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " master2",{'assword for':pw,'assword:':pw},timeout=99999)
 		except NameError:
-			shutit.multisend('vagrant up openshiftansible2',{'assword for':pw,'assword:':pw},timeout=99999)
-		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^openshiftansible2 | awk '{print $2}'""") != 'running':
-			shutit.pause_point("machine: openshiftansible2 appears not to have come up cleanly")
+			shutit.multisend('vagrant up master2',{'assword for':pw,'assword:':pw},timeout=99999)
+		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^master2 | awk '{print $2}'""") != 'running':
+			shutit.pause_point("machine: master2 appears not to have come up cleanly")
 		try:
-			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " openshiftansible3",{'assword for':pw,'assword:':pw},timeout=99999)
+			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " etcd1",{'assword for':pw,'assword:':pw},timeout=99999)
 		except NameError:
-			shutit.multisend('vagrant up openshiftansible3',{'assword for':pw,'assword:':pw},timeout=99999)
-		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^openshiftansible3 | awk '{print $2}'""") != 'running':
-			shutit.pause_point("machine: openshiftansible3 appears not to have come up cleanly")
+			shutit.multisend('vagrant up etcd1',{'assword for':pw,'assword:':pw},timeout=99999)
+		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^etcd1 | awk '{print $2}'""") != 'running':
+			shutit.pause_point("machine: etcd1 appears not to have come up cleanly")
 		try:
-			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " openshiftansible4",{'assword for':pw,'assword:':pw},timeout=99999)
+			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " etcd2",{'assword for':pw,'assword:':pw},timeout=99999)
 		except NameError:
-			shutit.multisend('vagrant up openshiftansible4',{'assword for':pw,'assword:':pw},timeout=99999)
-		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^openshiftansible4 | awk '{print $2}'""") != 'running':
-			shutit.pause_point("machine: openshiftansible4 appears not to have come up cleanly")
+			shutit.multisend('vagrant up etcd2',{'assword for':pw,'assword:':pw},timeout=99999)
+		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^etcd2 | awk '{print $2}'""") != 'running':
+			shutit.pause_point("machine: etcd2 appears not to have come up cleanly")
 		try:
-			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " openshiftansible5",{'assword for':pw,'assword:':pw},timeout=99999)
+			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " etcd3",{'assword for':pw,'assword:':pw},timeout=99999)
 		except NameError:
-			shutit.multisend('vagrant up openshiftansible5',{'assword for':pw,'assword:':pw},timeout=99999)
-		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^openshiftansible5 | awk '{print $2}'""") != 'running':
-			shutit.pause_point("machine: openshiftansible5 appears not to have come up cleanly")
+			shutit.multisend('vagrant up etcd3',{'assword for':pw,'assword:':pw},timeout=99999)
+		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^etcd3 | awk '{print $2}'""") != 'running':
+			shutit.pause_point("machine: etcd3 appears not to have come up cleanly")
 		try:
-			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " openshiftansible6",{'assword for':pw,'assword:':pw},timeout=99999)
+			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " node1",{'assword for':pw,'assword:':pw},timeout=99999)
 		except NameError:
-			shutit.multisend('vagrant up openshiftansible6',{'assword for':pw,'assword:':pw},timeout=99999)
-		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^openshiftansible6 | awk '{print $2}'""") != 'running':
-			shutit.pause_point("machine: openshiftansible6 appears not to have come up cleanly")
+			shutit.multisend('vagrant up node1',{'assword for':pw,'assword:':pw},timeout=99999)
+		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^node1 | awk '{print $2}'""") != 'running':
+			shutit.pause_point("machine: node1 appears not to have come up cleanly")
 		try:
-			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " openshiftansible7",{'assword for':pw,'assword:':pw},timeout=99999)
+			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " node2",{'assword for':pw,'assword:':pw},timeout=99999)
 		except NameError:
-			shutit.multisend('vagrant up openshiftansible7',{'assword for':pw,'assword:':pw},timeout=99999)
-		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^openshiftansible7 | awk '{print $2}'""") != 'running':
-			shutit.pause_point("machine: openshiftansible7 appears not to have come up cleanly")
+			shutit.multisend('vagrant up node2',{'assword for':pw,'assword:':pw},timeout=99999)
+		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^node2 | awk '{print $2}'""") != 'running':
+			shutit.pause_point("machine: node2 appears not to have come up cleanly")
 
 
 		# machines is a dict of dicts containing information about each machine for you to use.
 		machines = {}
-		machines.update({'openshiftansible1':{'fqdn':'openshiftansible1.vagrant.test'}})
-		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['openshiftansible1']['fqdn'] + ''' | awk '{print $2}' ''')
-		machines.get('openshiftansible1').update({'ip':ip})
-		machines.update({'openshiftansible2':{'fqdn':'openshiftansible2.vagrant.test'}})
-		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['openshiftansible2']['fqdn'] + ''' | awk '{print $2}' ''')
-		machines.get('openshiftansible2').update({'ip':ip})
-		machines.update({'openshiftansible3':{'fqdn':'openshiftansible3.vagrant.test'}})
-		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['openshiftansible3']['fqdn'] + ''' | awk '{print $2}' ''')
-		machines.get('openshiftansible3').update({'ip':ip})
-		machines.update({'openshiftansible4':{'fqdn':'openshiftansible4.vagrant.test'}})
-		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['openshiftansible4']['fqdn'] + ''' | awk '{print $2}' ''')
-		machines.get('openshiftansible4').update({'ip':ip})
-		machines.update({'openshiftansible5':{'fqdn':'openshiftansible5.vagrant.test'}})
-		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['openshiftansible5']['fqdn'] + ''' | awk '{print $2}' ''')
-		machines.get('openshiftansible5').update({'ip':ip})
-		machines.update({'openshiftansible6':{'fqdn':'openshiftansible6.vagrant.test'}})
-		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['openshiftansible6']['fqdn'] + ''' | awk '{print $2}' ''')
-		machines.get('openshiftansible6').update({'ip':ip})
-		machines.update({'openshiftansible7':{'fqdn':'openshiftansible7.vagrant.test'}})
-		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['openshiftansible7']['fqdn'] + ''' | awk '{print $2}' ''')
-		machines.get('openshiftansible7').update({'ip':ip})
+		machines.update({'master1':{'fqdn':'master1.vagrant.test'}})
+		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['master1']['fqdn'] + ''' | awk '{print $2}' ''')
+		machines.get('master1').update({'ip':ip})
+		machines.update({'master2':{'fqdn':'master2.vagrant.test'}})
+		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['master2']['fqdn'] + ''' | awk '{print $2}' ''')
+		machines.get('master2').update({'ip':ip})
+		machines.update({'etcd1':{'fqdn':'etcd1.vagrant.test'}})
+		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['etcd1']['fqdn'] + ''' | awk '{print $2}' ''')
+		machines.get('etcd1').update({'ip':ip})
+		machines.update({'etcd2':{'fqdn':'etcd2.vagrant.test'}})
+		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['etcd2']['fqdn'] + ''' | awk '{print $2}' ''')
+		machines.get('etcd2').update({'ip':ip})
+		machines.update({'etcd3':{'fqdn':'etcd3.vagrant.test'}})
+		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['etcd3']['fqdn'] + ''' | awk '{print $2}' ''')
+		machines.get('etcd3').update({'ip':ip})
+		machines.update({'node1':{'fqdn':'node1.vagrant.test'}})
+		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['node1']['fqdn'] + ''' | awk '{print $2}' ''')
+		machines.get('node1').update({'ip':ip})
+		machines.update({'node2':{'fqdn':'node2.vagrant.test'}})
+		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['node2']['fqdn'] + ''' | awk '{print $2}' ''')
+		machines.get('node2').update({'ip':ip})
 
 
 		shutit.login(command='vagrant ssh ' + sorted(machines.keys())[0],check_sudo=False)
@@ -186,7 +186,7 @@ To get a picture of what has been set up.''',add_final_message=True,level=loggin
 
 
 	def get_config(self, shutit):
-		shutit.get_config(self.module_id,'vagrant_image',default='ubuntu/xenial64')
+		shutit.get_config(self.module_id,'vagrant_image',default='centos/7')
 		shutit.get_config(self.module_id,'vagrant_provider',default='virtualbox')
 		shutit.get_config(self.module_id,'gui',default='false')
 		shutit.get_config(self.module_id,'memory',default='1024')
