@@ -170,9 +170,101 @@ end''')
 		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['node2']['fqdn'] + ''' | awk '{print $2}' ''')
 		machines.get('node2').update({'ip':ip})
 
+		for machine in sorted(test_config_module.machines.keys()):
+			shutit.login(command='vagrant ssh ' + machine)
+			shutit.login(command='sudo su - ')
+			shutit.install('net-tools')
+			shutit.send('''sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config''')
+			shutit.send('echo root:origin | /usr/sbin/chpasswd')
+			shutit.send('systemctl restart sshd')
+			# This is to prevent ansible from getting the 'wrong' ip address for the host from eth0.
+			# See: http://stackoverflow.com/questions/29495704/how-do-you-change-ansible-default-ipv4
+			shutit.send('route add -net 8.8.8.8 netmask 255.255.255.255 eth1')
+			ip_addr = shutit.send_and_get_output("""ip -4 route get 8.8.8.8 | head -1 | awk '{print $NF}'""")
+			shutit.send(r"""sed -i 's/127.0.0.1\t\(.*\).vagrant.test.*/""" + ip_addr + r"""\t\1.vagrant.test\t\1/' /etc/hosts""")
+			shutit.logout()
+			shutit.logout()
+
+		for machine in sorted(test_config_module.machines.keys()):
+			shutit.login(command='vagrant ssh ' + machine)
+			shutit.login(command='sudo su -',password='vagrant')
+			for to_machine in sorted(test_config_module.machines.keys()):
+				shutit.multisend('ssh-copy-id root@' + to_machine + '.vagrant.test',{'ontinue connecting':'yes','assword':root_pass})
+				shutit.multisend('ssh-copy-id root@' + to_machine,{'ontinue connecting':'yes','assword':root_pass})
+
 
 		shutit.login(command='vagrant ssh ' + sorted(machines.keys())[0],check_sudo=False)
 		shutit.login(command='sudo su -',password='vagrant',check_sudo=False)
+        shutit.install('epel-release')
+        shutit.install('git')
+        shutit.install('ansible')
+        shutit.install('pyOpenSSL')
+        shutit.send('git clone https://github.com/openshift/openshift-ansible')
+		shutit.send_file('/etc/ansible/hosts','''# Create an OSEv3 group that contains the master, nodes, etcd, and lb groups.
+# The lb group lets Ansible configure HAProxy as the load balancing solution.
+# Comment lb out if your load balancer is pre-configured.
+[OSEv3:children]
+masters
+nodes
+etcd
+lb
+
+# Set variables common for all OSEv3 hosts
+[OSEv3:vars]
+ansible_ssh_user=root
+deployment_type=origin
+
+# Uncomment the following to enable htpasswd authentication; defaults to
+# DenyAllPasswordIdentityProvider.
+#openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
+
+# Native high availbility cluster method with optional load balancer.
+# If no lb group is defined installer assumes that a load balancer has
+# been preconfigured. For installation the value of
+# openshift_master_cluster_hostname must resolve to the load balancer
+# or to one or all of the masters defined in the inventory if no load
+# balancer is present.
+openshift_master_cluster_method=native
+openshift_master_cluster_hostname=openshift-cluster.vagrant.test
+openshift_master_cluster_public_hostname=openshift-cluster.vagrant.test
+
+# apply updated node defaults
+openshift_node_kubelet_args={'pods-per-core': ['10'], 'max-pods': ['250'], 'image-gc-high-threshold': ['90'], 'image-gc-low-threshold': ['80']}
+
+# override the default controller lease ttl
+#osm_controller_lease_ttl=30
+
+# enable ntp on masters to ensure proper failover
+openshift_clock_enabled=true
+
+# host group for masters
+[masters]
+master1.vagrant.test
+master2.vagrant.test
+master3.vagrant.test
+
+# host group for etcd
+[etcd]
+etcd1.vagrant.test
+etcd2.vagrant.test
+etcd3.vagrant.test
+
+# Specify load balancer host
+[lb]
+openshift-cluster.vagrant.test
+
+# host group for nodes, includes region info
+[nodes]
+master[1:3].vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+node1.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'east'}"
+node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"''')
+		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
+		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
+		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
+		shutit.pause_point('Are we done?')
+		shutit.send('git clone https://github.com/openshift/origin')
+		shutit.send('cd examples')
+		# TODO: https://github.com/openshift/origin/tree/master/examples/data-population
 		shutit.logout()
 		shutit.logout()
 		shutit.log('''Vagrantfile created in: ''' + shutit.build['this_vagrant_run_dir'],add_final_message=True,level=logging.DEBUG)
