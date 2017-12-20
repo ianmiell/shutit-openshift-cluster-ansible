@@ -101,7 +101,19 @@ fi
     end
   end
 end''')
-		pw = shutit.get_env_pass()
+		################################################################################
+		# Extract password from 'secret' file (which git ignores).
+		# TODO: check perms are only readable by user
+		try:
+			pw = file('secret').read().strip()
+		except IOError:
+			pw = ''
+		if pw == '':
+			shutit.log('''================================================================================\nWARNING! IF THIS DOES NOT WORK YOU MAY NEED TO SET UP A 'secret' FILE IN THIS FOLDER!\n================================================================================''',level=logging.CRITICAL)
+			pw='nopass'
+		################################################################################
+
+		################################################################################
 		try:
 			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " master1",{'assword for':pw,'assword:':pw},timeout=99999)
 		except NameError:
@@ -144,8 +156,10 @@ end''')
 			shutit.multisend('vagrant up node2',{'assword for':pw,'assword:':pw},timeout=99999)
 		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^node2 | awk '{print $2}'""") != 'running':
 			shutit.pause_point("machine: node2 appears not to have come up cleanly")
+		################################################################################
 
 
+		################################################################################
 		# machines is a dict of dicts containing information about each machine for you to use.
 		machines = {}
 		machines.update({'master1':{'fqdn':'master1.vagrant.test'}})
@@ -169,37 +183,40 @@ end''')
 		machines.update({'node2':{'fqdn':'node2.vagrant.test'}})
 		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['node2']['fqdn'] + ''' | awk '{print $2}' ''')
 		machines.get('node2').update({'ip':ip})
+		################################################################################
 
-		for machine in sorted(test_config_module.machines.keys()):
+		################################################################################
+		root_pass = 'origin'
+		for machine in sorted(machines.keys()):
 			shutit.login(command='vagrant ssh ' + machine)
 			shutit.login(command='sudo su - ')
 			shutit.install('net-tools')
 			shutit.send('''sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config''')
-			shutit.send('echo root:origin | /usr/sbin/chpasswd')
+			shutit.send('echo root:' + root_pass + ' | /usr/sbin/chpasswd')
 			shutit.send('systemctl restart sshd')
 			# This is to prevent ansible from getting the 'wrong' ip address for the host from eth0.
 			# See: http://stackoverflow.com/questions/29495704/how-do-you-change-ansible-default-ipv4
 			shutit.send('route add -net 8.8.8.8 netmask 255.255.255.255 eth1')
 			ip_addr = shutit.send_and_get_output("""ip -4 route get 8.8.8.8 | head -1 | awk '{print $NF}'""")
 			shutit.send(r"""sed -i 's/127.0.0.1\t\(.*\).vagrant.test.*/""" + ip_addr + r"""\t\1.vagrant.test\t\1/' /etc/hosts""")
-			shutit.logout()
-			shutit.logout()
-
-		for machine in sorted(test_config_module.machines.keys()):
-			shutit.login(command='vagrant ssh ' + machine)
-			shutit.login(command='sudo su -',password='vagrant')
-			for to_machine in sorted(test_config_module.machines.keys()):
+			shutit.multisend('ssh-keygen',{'Enter file in which':'','Enter passphrase':'','Enter same passphrase':''})
+			for to_machine in sorted(machines.keys()):
 				shutit.multisend('ssh-copy-id root@' + to_machine + '.vagrant.test',{'ontinue connecting':'yes','assword':root_pass})
 				shutit.multisend('ssh-copy-id root@' + to_machine,{'ontinue connecting':'yes','assword':root_pass})
+			shutit.logout()
+			shutit.logout()
+		################################################################################
 
-
-		shutit.login(command='vagrant ssh ' + sorted(machines.keys())[0],check_sudo=False)
+		################################################################################
+		shutit.login(command='vagrant ssh master1',check_sudo=False)
 		shutit.login(command='sudo su -',password='vagrant',check_sudo=False)
-        shutit.install('epel-release')
-        shutit.install('git')
-        shutit.install('ansible')
-        shutit.install('pyOpenSSL')
-        shutit.send('git clone https://github.com/openshift/openshift-ansible')
+		shutit.install('epel-release')
+		shutit.install('git')
+		shutit.install('ansible')
+		shutit.install('pyOpenSSL')
+		shutit.install('python-cryptography')
+		shutit.install('python-lxml')
+		shutit.send('git clone -b release-3.6 https://github.com/openshift/openshift-ansible')
 		shutit.send_file('/etc/ansible/hosts','''# Create an OSEv3 group that contains the master, nodes, etcd, and lb groups.
 # The lb group lets Ansible configure HAProxy as the load balancing solution.
 # Comment lb out if your load balancer is pre-configured.
@@ -241,7 +258,6 @@ openshift_clock_enabled=true
 [masters]
 master1.vagrant.test
 master2.vagrant.test
-master3.vagrant.test
 
 # host group for etcd
 [etcd]
@@ -267,12 +283,17 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 		# TODO: https://github.com/openshift/origin/tree/master/examples/data-population
 		shutit.logout()
 		shutit.logout()
+		################################################################################
+
+
+		################################################################################
 		shutit.log('''Vagrantfile created in: ''' + shutit.build['this_vagrant_run_dir'],add_final_message=True,level=logging.DEBUG)
 		shutit.log('''Run:
 
 	cd ''' + shutit.build['this_vagrant_run_dir'] + ''' && vagrant status && vagrant landrush ls
 
 To get a picture of what has been set up.''',add_final_message=True,level=logging.DEBUG)
+		################################################################################
 
 		return True
 
