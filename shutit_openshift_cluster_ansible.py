@@ -192,11 +192,7 @@ end''')
 			shutit.install('net-tools')
 			shutit.send('''sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config''')
 			shutit.send('''sed -i 's/.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config''')
-			shutit.logout()
-			shutit.logout()
-		for machine in sorted(machines.keys()):
-			shutit.login(command='vagrant ssh ' + machine)
-			shutit.login(command='sudo su - ')
+			shutit.send('systemctl restart sshd')
 			shutit.send('echo root:' + root_pass + ' | /usr/sbin/chpasswd')
 			shutit.send('systemctl restart sshd')
 			# This is to prevent ansible from getting the 'wrong' ip address for the host from eth0.
@@ -204,23 +200,26 @@ end''')
 			shutit.send('route add -net 8.8.8.8 netmask 255.255.255.255 eth1')
 			ip_addr = shutit.send_and_get_output("""ip -4 route get 8.8.8.8 | head -1 | awk '{print $NF}'""")
 			shutit.send(r"""sed -i 's/127.0.0.1\t\(.*\).vagrant.test.*/""" + ip_addr + r"""\t\1.vagrant.test\t\1/' /etc/hosts""")
+			shutit.logout()
+			shutit.logout()
+		for machine in sorted(machines.keys()):
+			shutit.login(command='vagrant ssh ' + machine)
+			shutit.login(command='sudo su - ')
 			shutit.multisend('ssh-keygen',{'Enter file in which':'','Enter passphrase':'','Enter same passphrase':''})
 			for to_machine in sorted(machines.keys()):
 				shutit.multisend('ssh-copy-id root@' + to_machine + '.vagrant.test',{'ontinue connecting':'yes','assword':root_pass})
 				shutit.multisend('ssh-copy-id root@' + to_machine,{'ontinue connecting':'yes','assword':root_pass})
-			if machine == 'master1':
-				shutit.pause_point('all accessible?')
 			shutit.logout()
 			shutit.logout()
 		################################################################################
 
 		################################################################################
-		for machine in sorted(machines.keys()):
-			shutit.login(command='vagrant ssh ' + machine)
-			shutit.login(command='sudo su - ')
-			shutit.send('origin-excluder disable')
-			shutit.logout()
-			shutit.logout()
+		#for machine in sorted(machines.keys()):
+		#	shutit.login(command='vagrant ssh ' + machine)
+		#	shutit.login(command='sudo su - ')
+		#	shutit.send('origin-excluder disable')
+		#	shutit.logout()
+		#	shutit.logout()
 		################################################################################
 
 		################################################################################
@@ -294,8 +293,18 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 		shutit.send('export ANSIBLE_KEEP_REMOTE_FILES=1') # For debug - see notes
 		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/openshift-preflight/check.yml',{'ontinue connecting':'yes'})
 		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
-		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
-		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
+		shutit.logout()
+		shutit.logout()
+		for machine in sorted(machines.keys()):
+			shutit.login(command='vagrant ssh ' + machine)
+			shutit.login(command='sudo su - ')
+			shutit.send('origin-docker-excluder unexclude')
+			shutit.logout()
+			shutit.logout()
+		shutit.login(command='vagrant ssh master1',check_sudo=False)
+		shutit.login(command='sudo su -',password='vagrant',check_sudo=False)
+		#shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
+		#shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
 		shutit.pause_point('Are we done?')
 		shutit.send('git clone https://github.com/openshift/origin')
 		shutit.send('cd examples')
