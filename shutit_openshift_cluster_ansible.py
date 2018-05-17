@@ -291,6 +291,7 @@ master[1:2].vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'def
 node1.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'east'}"
 node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"''')
 		shutit.send('export ANSIBLE_KEEP_REMOTE_FILES=1') # For debug - see notes
+		shutti.send('stty cols 500')
 		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/openshift-preflight/check.yml',{'ontinue connecting':'yes'})
 		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
 		shutit.logout()
@@ -305,6 +306,7 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 		shutit.login(command='sudo su -',password='vagrant',check_sudo=False)
 		#shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
 		#shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
+		shutti.send('stty cols 65535')
 		shutit.pause_point('Are we done?')
 		shutit.send('git clone https://github.com/openshift/origin')
 		shutit.send('cd examples')
