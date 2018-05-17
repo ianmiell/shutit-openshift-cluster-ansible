@@ -298,12 +298,15 @@ master[1:2].vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'def
 node1.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'east'}"
 node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"''')
 		shutit.send('export ANSIBLE_KEEP_REMOTE_FILES=1') # For debug - see notes
-		shutti.send('stty cols 500')
+		shutti.send('stty cols 200')
 		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/openshift-preflight/check.yml',{'ontinue connecting':'yes'})
 		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
 		shutit.logout()
 		shutit.logout()
 		for machine in sorted(machines.keys()):
+			if machine[:4] == 'etcd':
+				# not on etcd servers
+				continue
 			shutit.login(command='vagrant ssh ' + machine)
 			shutit.login(command='sudo su - ')
 			shutit.send('origin-docker-excluder unexclude')
