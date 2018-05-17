@@ -303,6 +303,7 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 			shutit.login(command='vagrant ssh ' + machine)
 			shutit.login(command='sudo su - ')
 			shutit.send('origin-docker-excluder unexclude')
+			shutit.install('docker')
 			shutit.logout()
 			shutit.logout()
 		shutit.login(command='vagrant ssh master1',check_sudo=False)
