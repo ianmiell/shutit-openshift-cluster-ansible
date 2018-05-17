@@ -232,8 +232,6 @@ end''')
 		shutit.install('python-cryptography')
 		shutit.install('python-lxml')
 		shutit.send('git clone -b release-3.6 https://github.com/openshift/openshift-ansible')
-
-		# https://raw.githubusercontent.com/openshift/openshift-ansible/master/inventory/hosts.example
 		shutit.send_file('/etc/ansible/hosts','''# Create an OSEv3 group that contains the master, nodes, etcd, and lb groups.
 # The lb group lets Ansible configure HAProxy as the load balancing solution.
 # Comment lb out if your load balancer is pre-configured.
@@ -247,12 +245,7 @@ lb
 [OSEv3:vars]
 openshift_disable_check=disk_availability,docker_image_availability,docker_storage,memory_availability
 ansible_ssh_user=root
-ansible_user=root
 deployment_type=origin
-openshift_deployment_type=origin
-openshift_release=v3.6
-openshift_master_default_subdomain=apps.test.example.com
-openshift_master_cluster_hostname=ose3-lb.test.example.com
 
 # Uncomment the following to enable htpasswd authentication; defaults to
 # DenyAllPasswordIdentityProvider.
@@ -298,7 +291,7 @@ master[1:2].vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'def
 node1.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'east'}"
 node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"''')
 		shutit.send('export ANSIBLE_KEEP_REMOTE_FILES=1') # For debug - see notes
-		shutti.send('stty cols 200')
+		shutit.send('stty cols 200')
 		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/openshift-preflight/check.yml',{'ontinue connecting':'yes'})
 		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
 		shutit.logout()
@@ -314,10 +307,10 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 			shutit.logout()
 		shutit.login(command='vagrant ssh master1',check_sudo=False)
 		shutit.login(command='sudo su -',password='vagrant',check_sudo=False)
-		#shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
-		#shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
-		shutti.send('stty cols 65535')
+		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
 		shutit.pause_point('Are we done?')
+		#shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
+		shutit.send('stty cols 65535')
 		shutit.send('git clone https://github.com/openshift/origin')
 		shutit.send('cd examples')
 		# TODO: https://github.com/openshift/origin/tree/master/examples/data-population
