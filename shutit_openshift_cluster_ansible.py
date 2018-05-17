@@ -27,11 +27,10 @@ then
 		fi
 	done
 fi
-if [[ $(command -v virsh) ]] && [[ $(kvm-ok 2>&1 | command grep 'can be used') != '' ]]
-then
-	virsh list | grep ${MODULE_NAME} | awk '{print $1}' | xargs -n1 virsh destroy
-fi
-''')
+#if [[ $(command -v virsh) ]] && [[ $(kvm-ok 2>&1 | command grep 'can be used') != '' ]]
+#then
+#	virsh list | grep ${MODULE_NAME} | awk '{print $1}' | xargs -n1 virsh destroy
+#fi''')
 		vagrant_image = shutit.cfg[self.module_id]['vagrant_image']
 		vagrant_provider = shutit.cfg[self.module_id]['vagrant_provider']
 		gui = shutit.cfg[self.module_id]['gui']
@@ -192,6 +191,12 @@ end''')
 			shutit.login(command='sudo su - ')
 			shutit.install('net-tools')
 			shutit.send('''sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config''')
+			shutit.send('''sed -i 's/.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config''')
+			shutit.logout()
+			shutit.logout()
+		for machine in sorted(machines.keys()):
+			shutit.login(command='vagrant ssh ' + machine)
+			shutit.login(command='sudo su - ')
 			shutit.send('echo root:' + root_pass + ' | /usr/sbin/chpasswd')
 			shutit.send('systemctl restart sshd')
 			# This is to prevent ansible from getting the 'wrong' ip address for the host from eth0.
@@ -203,6 +208,17 @@ end''')
 			for to_machine in sorted(machines.keys()):
 				shutit.multisend('ssh-copy-id root@' + to_machine + '.vagrant.test',{'ontinue connecting':'yes','assword':root_pass})
 				shutit.multisend('ssh-copy-id root@' + to_machine,{'ontinue connecting':'yes','assword':root_pass})
+			if machine == 'master1':
+				shutit.pause_point('all accessible?')
+			shutit.logout()
+			shutit.logout()
+		################################################################################
+
+		################################################################################
+		for machine in sorted(machines.keys()):
+			shutit.login(command='vagrant ssh ' + machine)
+			shutit.login(command='sudo su - ')
+			shutit.send('origin-excluder disable')
 			shutit.logout()
 			shutit.logout()
 		################################################################################
@@ -228,6 +244,7 @@ lb
 
 # Set variables common for all OSEv3 hosts
 [OSEv3:vars]
+openshift_disable_check=disk_availability,docker_image_availability,docker_storage,memory_availability
 ansible_ssh_user=root
 deployment_type=origin
 
@@ -242,8 +259,8 @@ deployment_type=origin
 # or to one or all of the masters defined in the inventory if no load
 # balancer is present.
 openshift_master_cluster_method=native
-openshift_master_cluster_hostname=openshift-cluster.vagrant.test
-openshift_master_cluster_public_hostname=openshift-cluster.vagrant.test
+openshift_master_cluster_hostname=master1.vagrant.test
+openshift_master_cluster_public_hostname=master1.vagrant.test
 
 # apply updated node defaults
 openshift_node_kubelet_args={'pods-per-core': ['10'], 'max-pods': ['250'], 'image-gc-high-threshold': ['90'], 'image-gc-low-threshold': ['80']}
@@ -267,13 +284,14 @@ etcd3.vagrant.test
 
 # Specify load balancer host
 [lb]
-openshift-cluster.vagrant.test
+master1.vagrant.test
 
 # host group for nodes, includes region info
 [nodes]
-master[1:3].vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+master[1:2].vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
 node1.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'east'}"
 node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"''')
+		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/openshift-preflight/check.yml',{'ontinue connecting':'yes'})
 		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
 		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
 		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
