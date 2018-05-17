@@ -232,6 +232,8 @@ end''')
 		shutit.install('python-cryptography')
 		shutit.install('python-lxml')
 		shutit.send('git clone -b release-3.6 https://github.com/openshift/openshift-ansible')
+
+		# https://raw.githubusercontent.com/openshift/openshift-ansible/master/inventory/hosts.example
 		shutit.send_file('/etc/ansible/hosts','''# Create an OSEv3 group that contains the master, nodes, etcd, and lb groups.
 # The lb group lets Ansible configure HAProxy as the load balancing solution.
 # Comment lb out if your load balancer is pre-configured.
@@ -245,7 +247,12 @@ lb
 [OSEv3:vars]
 openshift_disable_check=disk_availability,docker_image_availability,docker_storage,memory_availability
 ansible_ssh_user=root
+ansible_user=root
 deployment_type=origin
+openshift_deployment_type=origin
+openshift_release=v3.6
+openshift_master_default_subdomain=apps.test.example.com
+openshift_master_cluster_hostname=ose3-lb.test.example.com
 
 # Uncomment the following to enable htpasswd authentication; defaults to
 # DenyAllPasswordIdentityProvider.
