@@ -307,7 +307,7 @@ master1.vagrant.test openshift_ip=''' + machines['master1']['ip'] + '''
 [nodes]
 master1.vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
 master2.vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
-node1.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'east'}" openshift_ip=''' + machines['node1']['ip'] + '''
+node1.vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}" openshift_ip=''' + machines['node1']['ip'] + '''
 node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}" openshift_ip=''' + machines['node2']['ip'])
 		# TODO: deprecation_warnings=False in ansible.cfg
 		shutit.send('export ANSIBLE_KEEP_REMOTE_FILES=1') # For debug - see notes
