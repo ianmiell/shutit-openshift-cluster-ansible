@@ -7,7 +7,7 @@ then
 	echo "Must have shutit on path, eg export PATH=$PATH:/path/to/shutit_dir"
 	exit 1
 fi
-./destroy_vms.sh
+yes | destroy_vms.sh
 $SHUTIT build --echo -d bash -m shutit-library/vagrant -m shutit-library/virtualization "$@"
 if [[ $? != 0 ]]
 then

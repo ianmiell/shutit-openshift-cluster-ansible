@@ -118,6 +118,7 @@ end''')
 			pw='nopass'
 		################################################################################
 
+
 		################################################################################
 		def vagrant_up(shutit,pw):
 			try:
@@ -192,24 +193,43 @@ end''')
 		machines.get('node2').update({'ip':ip})
 		################################################################################
 
+
 		################################################################################
+		shutit_sessions = {}
+		for machine in machines.keys():                                                                                                                                                 
+			shutit_sessions.update({machine:shutit.create_session('bash')})
+		################################################################################
+
 		root_pass = 'origin'
-		for machine in sorted(machines.keys()):
-			shutit.login(command='vagrant ssh ' + machine)
-			shutit.login(command='sudo su - ')
-			shutit.install('net-tools')
-			shutit.send('''sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config''')
-			shutit.send('''sed -i 's/.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config''')
-			shutit.send('systemctl restart sshd')
-			shutit.send('echo root:' + root_pass + ' | /usr/sbin/chpasswd')
-			shutit.send('systemctl restart sshd')
+		################################################################################
+        # Wait for all sessions to complete
+        def sync(machines, shutit_sessions):
+            for machine in sorted(machines.keys()):
+                shutit_session = shutit_sessions[machine]
+                shutit_session.wait()
+		################################################################################
+
+		################################################################################
+		for machine in machines.keys():                                                                                                                                                 
+			shutit_session = shutit_sessions[machine]
+			shutit_session.send('command cd ' + shutit.build['this_vagrant_run_dir'])
+			shutit_session.login(command='vagrant ssh ' + machine)
+			shutit_session.login(command='sudo su - ')
+			shutit_session.install('net-tools')
+			shutit_session.send('''sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config''')
+			shutit_session.send('''sed -i 's/.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config''')
+			shutit_session.send('echo root:' + root_pass + ' | /usr/sbin/chpasswd')
+			shutit_session.send('systemctl restart sshd')
 			# This is to prevent ansible from getting the 'wrong' ip address for the host from eth0.
 			# See: http://stackoverflow.com/questions/29495704/how-do-you-change-ansible-default-ipv4
-			shutit.send('route add -net 8.8.8.8 netmask 255.255.255.255 eth1')
-			ip_addr = shutit.send_and_get_output("""ip -4 route get 8.8.8.8 | head -1 | awk '{print $NF}'""")
-			shutit.send(r"""sed -i 's/127.0.0.1\t\(.*\).vagrant.test.*/""" + ip_addr + r"""\t\1.vagrant.test\t\1/' /etc/hosts""")
-			shutit.logout()
-			shutit.logout()
+			shutit_session.send('route add -net 8.8.8.8 netmask 255.255.255.255 eth1')
+			ip_addr = shutit_session.send_and_get_output("""ip -4 route get 8.8.8.8 | head -1 | awk '{print $NF}'""")
+			shutit_session.send(r"""sed -i 's/127.0.0.1\t\(.*\).vagrant.test.*/""" + ip_addr + r"""\t\1.vagrant.test\t\1/' /etc/hosts""")
+		sync(machines, shutit_session)
+		shutit.pause_point('ok?')
+		################################################################################
+
+		################################################################################
 		for machine in sorted(machines.keys()):
 			shutit.login(command='vagrant ssh ' + machine)
 			shutit.login(command='sudo su - ')
