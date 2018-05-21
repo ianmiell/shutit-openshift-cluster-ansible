@@ -232,8 +232,6 @@ end''')
 			shutit_session.send('route add -net 8.8.8.8 netmask 255.255.255.255 eth1')
 			ip_addr = shutit_session.send_and_get_output("""ip -4 route get 8.8.8.8 | head -1 | awk '{print $NF}'""")
 			shutit_session.send(r"""sed -i 's/127.0.0.1\t\(.*\).vagrant.test.*/""" + ip_addr + r"""\t\1.vagrant.test\t\1/' /etc/hosts""")
-
-		shutit.pause_point('ok?')
 		################################################################################
 
 		################################################################################
@@ -246,15 +244,6 @@ end''')
 				shutit.multisend('ssh-copy-id root@' + to_machine,{'ontinue connecting':'yes','assword':root_pass})
 			shutit.logout()
 			shutit.logout()
-		################################################################################
-
-		################################################################################
-		#for machine in sorted(machines.keys()):
-		#	shutit.login(command='vagrant ssh ' + machine)
-		#	shutit.login(command='sudo su - ')
-		#	shutit.send('origin-excluder disable')
-		#	shutit.logout()
-		#	shutit.logout()
 		################################################################################
 
 		################################################################################
@@ -323,22 +312,18 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 		# TODO: deprecation_warnings=False in ansible.cfg
 		shutit.send('export ANSIBLE_KEEP_REMOTE_FILES=1') # For debug - see notes
 		shutit.send('stty cols 200')
-		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/openshift-preflight/check.yml',{'ontinue connecting':'yes'},timeout=99999)
+		#shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/openshift-preflight/check.yml',{'ontinue connecting':'yes'},timeout=99999)
 		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'},timeout=9999999)
-		shutit.logout()
-		shutit.logout()
-		for machine in sorted(machines.keys()):
+		for machine in machines.keys():
 			if machine[:4] == 'etcd':
 				# not on etcd servers
 				continue
-			shutit.login(command='vagrant ssh ' + machine)
-			shutit.login(command='sudo su - ')
-			shutit.send('origin-docker-excluder unexclude || true')
-			shutit.install('docker')
-			shutit.logout()
-			shutit.logout()
-		shutit.login(command='vagrant ssh master1',check_sudo=False)
-		shutit.login(command='sudo su -',password='vagrant',check_sudo=False)
+			shutit_session = shutit_sessions[machine]
+			shutit_session.send('origin-docker-excluder unexclude || true')
+			shutit_session.send('yum -y install docker',background=True,wait=False,block_other_commands=False)
+		for machine in sorted(machines.keys()):
+			shutit_session = shutit_sessions[machine]
+			shutit_session.wait()
 		shutit.send('stty cols 200')
 		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'},timeout=9999999)
 		while True:
