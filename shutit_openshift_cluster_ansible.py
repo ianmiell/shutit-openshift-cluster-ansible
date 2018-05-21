@@ -47,56 +47,62 @@ fi
   config.landrush.enabled = true
   config.vm.provider "virtualbox" do |vb|
     vb.gui = ''' + gui + '''
-    vb.memory = "''' + memory + '''"
   end
 
   config.vm.define "master1" do |master1|
     master1.vm.box = ''' + '"' + vagrant_image + '"' + '''
     master1.vm.hostname = "master1.vagrant.test"
-    config.vm.provider :virtualbox do |vb|
-      vb.name = "shutit_openshift_cluster_ansible_1"
+    master1.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--memory", "2048"]
+      v.name = "ansmaster1"
     end
   end
   config.vm.define "master2" do |master2|
     master2.vm.box = ''' + '"' + vagrant_image + '"' + '''
     master2.vm.hostname = "master2.vagrant.test"
-    config.vm.provider :virtualbox do |vb|
-      vb.name = "shutit_openshift_cluster_ansible_2"
+    master2.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--memory", "2048"]
+      v.name = "ansmaster2"
     end
   end
   config.vm.define "etcd1" do |etcd1|
     etcd1.vm.box = ''' + '"' + vagrant_image + '"' + '''
     etcd1.vm.hostname = "etcd1.vagrant.test"
-    config.vm.provider :virtualbox do |vb|
-      vb.name = "shutit_openshift_cluster_ansible_3"
+    etcd1.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--memory", "1024"]
+      v.name = "ansetcd1"
     end
   end
   config.vm.define "etcd2" do |etcd2|
     etcd2.vm.box = ''' + '"' + vagrant_image + '"' + '''
     etcd2.vm.hostname = "etcd2.vagrant.test"
-    config.vm.provider :virtualbox do |vb|
-      vb.name = "shutit_openshift_cluster_ansible_4"
+    etcd2.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--memory", "1024"]
+      v.name = "ansetcd2"
     end
   end
   config.vm.define "etcd3" do |etcd3|
     etcd3.vm.box = ''' + '"' + vagrant_image + '"' + '''
     etcd3.vm.hostname = "etcd3.vagrant.test"
-    config.vm.provider :virtualbox do |vb|
-      vb.name = "shutit_openshift_cluster_ansible_5"
+    etcd3.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--memory", "1024"]
+      v.name = "ansetcd3"
     end
   end
   config.vm.define "node1" do |node1|
     node1.vm.box = ''' + '"' + vagrant_image + '"' + '''
     node1.vm.hostname = "node1.vagrant.test"
-    config.vm.provider :virtualbox do |vb|
-      vb.name = "shutit_openshift_cluster_ansible_6"
+    node1.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--memory", "2048"]
+      v.name = "ansnode1"
     end
   end
   config.vm.define "node2" do |node2|
     node2.vm.box = ''' + '"' + vagrant_image + '"' + '''
     node2.vm.hostname = "node2.vagrant.test"
-    config.vm.provider :virtualbox do |vb|
-      vb.name = "shutit_openshift_cluster_ansible_7"
+    node2.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--memory", "2048"]
+      v.name = "ansnode2"
     end
   end
 end''')
@@ -113,48 +119,50 @@ end''')
 		################################################################################
 
 		################################################################################
-		try:
-			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " master1",{'assword for':pw,'assword:':pw},timeout=99999)
-		except NameError:
-			shutit.multisend('vagrant up master1',{'assword for':pw,'assword:':pw},timeout=99999)
-		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^master1 | awk '{print $2}'""") != 'running':
-			shutit.pause_point("machine: master1 appears not to have come up cleanly")
-		try:
-			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " master2",{'assword for':pw,'assword:':pw},timeout=99999)
-		except NameError:
-			shutit.multisend('vagrant up master2',{'assword for':pw,'assword:':pw},timeout=99999)
-		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^master2 | awk '{print $2}'""") != 'running':
-			shutit.pause_point("machine: master2 appears not to have come up cleanly")
-		try:
-			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " etcd1",{'assword for':pw,'assword:':pw},timeout=99999)
-		except NameError:
-			shutit.multisend('vagrant up etcd1',{'assword for':pw,'assword:':pw},timeout=99999)
-		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^etcd1 | awk '{print $2}'""") != 'running':
-			shutit.pause_point("machine: etcd1 appears not to have come up cleanly")
-		try:
-			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " etcd2",{'assword for':pw,'assword:':pw},timeout=99999)
-		except NameError:
-			shutit.multisend('vagrant up etcd2',{'assword for':pw,'assword:':pw},timeout=99999)
-		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^etcd2 | awk '{print $2}'""") != 'running':
-			shutit.pause_point("machine: etcd2 appears not to have come up cleanly")
-		try:
-			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " etcd3",{'assword for':pw,'assword:':pw},timeout=99999)
-		except NameError:
-			shutit.multisend('vagrant up etcd3',{'assword for':pw,'assword:':pw},timeout=99999)
-		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^etcd3 | awk '{print $2}'""") != 'running':
-			shutit.pause_point("machine: etcd3 appears not to have come up cleanly")
-		try:
-			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " node1",{'assword for':pw,'assword:':pw},timeout=99999)
-		except NameError:
-			shutit.multisend('vagrant up node1',{'assword for':pw,'assword:':pw},timeout=99999)
-		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^node1 | awk '{print $2}'""") != 'running':
-			shutit.pause_point("machine: node1 appears not to have come up cleanly")
-		try:
-			shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " node2",{'assword for':pw,'assword:':pw},timeout=99999)
-		except NameError:
-			shutit.multisend('vagrant up node2',{'assword for':pw,'assword:':pw},timeout=99999)
-		if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^node2 | awk '{print $2}'""") != 'running':
-			shutit.pause_point("machine: node2 appears not to have come up cleanly")
+		def vagrant_up(shutit,pw):
+			try:
+				shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " master1",{'assword for':pw,'assword:':pw},timeout=99999)
+			except NameError:
+				shutit.multisend('vagrant up master1',{'assword for':pw,'assword:':pw},timeout=99999)
+			if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^master1 | awk '{print $2}'""") != 'running':
+				shutit.pause_point("machine: master1 appears not to have come up cleanly")
+			try:
+				shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " master2",{'assword for':pw,'assword:':pw},timeout=99999)
+			except NameError:
+				shutit.multisend('vagrant up master2',{'assword for':pw,'assword:':pw},timeout=99999)
+			if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^master2 | awk '{print $2}'""") != 'running':
+				shutit.pause_point("machine: master2 appears not to have come up cleanly")
+			try:
+				shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " etcd1",{'assword for':pw,'assword:':pw},timeout=99999)
+			except NameError:
+				shutit.multisend('vagrant up etcd1',{'assword for':pw,'assword:':pw},timeout=99999)
+			if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^etcd1 | awk '{print $2}'""") != 'running':
+				shutit.pause_point("machine: etcd1 appears not to have come up cleanly")
+			try:
+				shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " etcd2",{'assword for':pw,'assword:':pw},timeout=99999)
+			except NameError:
+				shutit.multisend('vagrant up etcd2',{'assword for':pw,'assword:':pw},timeout=99999)
+			if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^etcd2 | awk '{print $2}'""") != 'running':
+				shutit.pause_point("machine: etcd2 appears not to have come up cleanly")
+			try:
+				shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " etcd3",{'assword for':pw,'assword:':pw},timeout=99999)
+			except NameError:
+				shutit.multisend('vagrant up etcd3',{'assword for':pw,'assword:':pw},timeout=99999)
+			if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^etcd3 | awk '{print $2}'""") != 'running':
+				shutit.pause_point("machine: etcd3 appears not to have come up cleanly")
+			try:
+				shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " node1",{'assword for':pw,'assword:':pw},timeout=99999)
+			except NameError:
+				shutit.multisend('vagrant up node1',{'assword for':pw,'assword:':pw},timeout=99999)
+			if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^node1 | awk '{print $2}'""") != 'running':
+				shutit.pause_point("machine: node1 appears not to have come up cleanly")
+			try:
+				shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " node2",{'assword for':pw,'assword:':pw},timeout=99999)
+			except NameError:
+				shutit.multisend('vagrant up node2',{'assword for':pw,'assword:':pw},timeout=99999)
+			if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^node2 | awk '{print $2}'""") != 'running':
+				shutit.pause_point("machine: node2 appears not to have come up cleanly")
+		vagrant_up(shutit,pw)
 		################################################################################
 
 
@@ -272,28 +280,30 @@ openshift_clock_enabled=true
 
 # host group for masters
 [masters]
-master1.vagrant.test
-master2.vagrant.test
+master1.vagrant.test openshift_ip=''' + machines['master1']['ip'] + '''
+master2.vagrant.test openshift_ip=''' + machines['master2']['ip'] + '''
 
 # host group for etcd
 [etcd]
-etcd1.vagrant.test
-etcd2.vagrant.test
-etcd3.vagrant.test
+etcd1.vagrant.test openshift_ip=''' + machines['etcd1']['ip'] + '''
+etcd2.vagrant.test openshift_ip=''' + machines['etcd2']['ip'] + '''
+etcd3.vagrant.test openshift_ip=''' + machines['etcd3']['ip'] + '''
 
 # Specify load balancer host
 [lb]
-master1.vagrant.test
+master1.vagrant.test openshift_ip=''' + machines['master1']['ip'] + '''
 
 # host group for nodes, includes region info
 [nodes]
-master[1:2].vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
-node1.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'east'}"
-node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"''')
+master1.vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+master2.vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+node1.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'east'}" openshift_ip=''' + machines['node1']['ip'] + '''
+node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}" openshift_ip=''' + machines['node2']['ip'])
+		# TODO: deprecation_warnings=False in ansible.cfg
 		shutit.send('export ANSIBLE_KEEP_REMOTE_FILES=1') # For debug - see notes
 		shutit.send('stty cols 200')
-		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/openshift-preflight/check.yml',{'ontinue connecting':'yes'})
-		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
+		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/openshift-preflight/check.yml',{'ontinue connecting':'yes'},timeout=99999)
+		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'},timeout=9999999)
 		shutit.logout()
 		shutit.logout()
 		for machine in sorted(machines.keys()):
@@ -302,15 +312,25 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 				continue
 			shutit.login(command='vagrant ssh ' + machine)
 			shutit.login(command='sudo su - ')
-			shutit.send('origin-docker-excluder unexclude')
+			shutit.send('origin-docker-excluder unexclude || true')
 			shutit.install('docker')
 			shutit.logout()
 			shutit.logout()
 		shutit.login(command='vagrant ssh master1',check_sudo=False)
 		shutit.login(command='sudo su -',password='vagrant',check_sudo=False)
-		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
-		shutit.pause_point('Are we done?')
-		#shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'})
+		shutit.send('stty cols 200')
+		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'},timeout=9999999)
+		while True:
+			shutit.logout()
+			shutit.logout()
+			shutit.send('vagrant halt')
+			vagrant_up(shutit,pw)
+			shutit.login(command='vagrant ssh master1',check_sudo=False)
+			shutit.login(command='sudo su -',password='vagrant',check_sudo=False)
+			shutit.send('stty cols 200')
+			shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'},timeout=9999999)
+			shutit.pause_point('Are we done?')
+		#shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'}timeout=9999999)
 		shutit.send('stty cols 65535')
 		shutit.send('git clone https://github.com/openshift/origin')
 		shutit.send('cd examples')
@@ -333,7 +353,8 @@ To get a picture of what has been set up.''',add_final_message=True,level=loggin
 
 
 	def get_config(self, shutit):
-		shutit.get_config(self.module_id,'vagrant_image',default='centos/7')
+		#shutit.get_config(self.module_id,'vagrant_image',default='centos/7')
+		shutit.get_config(self.module_id,'vagrant_image',default='https://cloud.centos.org/centos/7/vagrant/x86_64/images/CentOS-7-x86_64-Vagrant-1804_02.VirtualBox.box')
 		shutit.get_config(self.module_id,'vagrant_provider',default='virtualbox')
 		shutit.get_config(self.module_id,'gui',default='false')
 		shutit.get_config(self.module_id,'memory',default='1024')
