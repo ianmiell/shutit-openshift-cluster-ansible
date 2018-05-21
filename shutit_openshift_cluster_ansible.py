@@ -329,6 +329,7 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 		while True:
 			shutit.logout()
 			shutit.logout()
+			# We need to restart to sort out dnsmasq.
 			shutit.send('vagrant halt')
 			vagrant_up(shutit,pw)
 			shutit.login(command='vagrant ssh master1',check_sudo=False)
