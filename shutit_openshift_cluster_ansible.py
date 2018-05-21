@@ -335,26 +335,12 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 			shutit.login(command='sudo su -',password='vagrant',check_sudo=False)
 			shutit.send('stty cols 200')
 			shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'},timeout=9999999)
+			shutit.send('stty cols 65535')
+			# TODO: find a way to determine whether there's a problem, continue if not.
 			shutit.pause_point('Are we done?')
-		#shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'}timeout=9999999)
-		shutit.send('stty cols 65535')
-		shutit.send('git clone https://github.com/openshift/origin')
-		shutit.send('cd examples')
-		# TODO: https://github.com/openshift/origin/tree/master/examples/data-population
 		shutit.logout()
 		shutit.logout()
 		################################################################################
-
-
-		################################################################################
-		shutit.log('''Vagrantfile created in: ''' + shutit.build['this_vagrant_run_dir'],add_final_message=True,level=logging.DEBUG)
-		shutit.log('''Run:
-
-	cd ''' + shutit.build['this_vagrant_run_dir'] + ''' && vagrant status && vagrant landrush ls
-
-To get a picture of what has been set up.''',add_final_message=True,level=logging.DEBUG)
-		################################################################################
-
 		return True
 
 
