@@ -196,26 +196,33 @@ end''')
 
 		################################################################################
 		shutit_sessions = {}
-		for machine in machines.keys():                                                                                                                                                 
+		for machine in machines.keys():
 			shutit_sessions.update({machine:shutit.create_session('bash')})
 		################################################################################
 
 		root_pass = 'origin'
 		################################################################################
-        # Wait for all sessions to complete
-        def sync(machines, shutit_sessions):
-            for machine in sorted(machines.keys()):
-                shutit_session = shutit_sessions[machine]
-                shutit_session.wait()
-		################################################################################
-
-		################################################################################
-		for machine in machines.keys():                                                                                                                                                 
+		for machine in machines.keys():
 			shutit_session = shutit_sessions[machine]
 			shutit_session.send('command cd ' + shutit.build['this_vagrant_run_dir'])
 			shutit_session.login(command='vagrant ssh ' + machine)
 			shutit_session.login(command='sudo su - ')
-			shutit_session.install('net-tools')
+			shutit_session.send('yum install -y net-tools epel-release',background=True,wait=False,block_other_commands=False)
+
+		for machine in sorted(machines.keys()):
+			shutit_session = shutit_sessions[machine]
+			shutit_session.wait()
+
+		for machine in machines.keys():
+			shutit_session = shutit_sessions[machine]
+			shutit_session.send('yum -y install git ansible pyOpenSSL python-cryptography python-lxml',background=True,wait=False,block_other_commands=False)
+
+		for machine in sorted(machines.keys()):
+			shutit_session = shutit_sessions[machine]
+			shutit_session.wait()
+
+		for machine in machines.keys():
+			shutit_session = shutit_sessions[machine]
 			shutit_session.send('''sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config''')
 			shutit_session.send('''sed -i 's/.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config''')
 			shutit_session.send('echo root:' + root_pass + ' | /usr/sbin/chpasswd')
@@ -225,7 +232,7 @@ end''')
 			shutit_session.send('route add -net 8.8.8.8 netmask 255.255.255.255 eth1')
 			ip_addr = shutit_session.send_and_get_output("""ip -4 route get 8.8.8.8 | head -1 | awk '{print $NF}'""")
 			shutit_session.send(r"""sed -i 's/127.0.0.1\t\(.*\).vagrant.test.*/""" + ip_addr + r"""\t\1.vagrant.test\t\1/' /etc/hosts""")
-		sync(machines, shutit_session)
+
 		shutit.pause_point('ok?')
 		################################################################################
 
@@ -253,12 +260,6 @@ end''')
 		################################################################################
 		shutit.login(command='vagrant ssh master1',check_sudo=False)
 		shutit.login(command='sudo su -',password='vagrant',check_sudo=False)
-		shutit.install('epel-release')
-		shutit.install('git')
-		shutit.install('ansible')
-		shutit.install('pyOpenSSL')
-		shutit.install('python-cryptography')
-		shutit.install('python-lxml')
 		shutit.send('git clone -b release-3.6 https://github.com/openshift/openshift-ansible')
 		shutit.send_file('/etc/ansible/hosts','''# Create an OSEv3 group that contains the master, nodes, etcd, and lb groups.
 # The lb group lets Ansible configure HAProxy as the load balancing solution.
