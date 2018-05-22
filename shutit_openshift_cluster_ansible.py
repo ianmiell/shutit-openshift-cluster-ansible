@@ -249,7 +249,7 @@ end''')
 		################################################################################
 		shutit.login(command='vagrant ssh master1',check_sudo=False)
 		shutit.login(command='sudo su -',password='vagrant',check_sudo=False)
-		shutit.send('git clone -b release-3.6 https://github.com/openshift/openshift-ansible')
+		shutit.send('git clone -b release-3.7 https://github.com/openshift/openshift-ansible')
 		shutit.send_file('/etc/ansible/hosts','''# Create an OSEv3 group that contains the master, nodes, etcd, and lb groups.
 # The lb group lets Ansible configure HAProxy as the load balancing solution.
 # Comment lb out if your load balancer is pre-configured.
@@ -264,6 +264,7 @@ lb
 openshift_disable_check=disk_availability,docker_image_availability,docker_storage,memory_availability
 ansible_ssh_user=root
 deployment_type=origin
+openshift_release=v3.7
 
 # Uncomment the following to enable htpasswd authentication; defaults to
 # DenyAllPasswordIdentityProvider.
