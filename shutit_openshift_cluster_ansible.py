@@ -291,25 +291,25 @@ openshift_clock_enabled=true
 
 # host group for masters
 [masters]
-master1.vagrant.test openshift_ip=''' + machines['master1']['ip'] + '''
-master2.vagrant.test openshift_ip=''' + machines['master2']['ip'] + '''
+master1.vagrant.test
+master2.vagrant.test
 
 # host group for etcd
 [etcd]
-etcd1.vagrant.test openshift_ip=''' + machines['etcd1']['ip'] + '''
-etcd2.vagrant.test openshift_ip=''' + machines['etcd2']['ip'] + '''
-etcd3.vagrant.test openshift_ip=''' + machines['etcd3']['ip'] + '''
+etcd1.vagrant.test
+etcd2.vagrant.test
+etcd3.vagrant.test
 
 # Specify load balancer host
 [lb]
-master1.vagrant.test openshift_ip=''' + machines['master1']['ip'] + '''
+master1.vagrant.test
 
 # host group for nodes, includes region info
 [nodes]
 master1.vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
 master2.vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
-node1.vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}" openshift_ip=''' + machines['node1']['ip'] + '''
-node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}" openshift_ip=''' + machines['node2']['ip'])
+node1.vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 		# TODO: deprecation_warnings=False in ansible.cfg
 		shutit.send('export ANSIBLE_KEEP_REMOTE_FILES=1') # For debug - see notes
 		shutit.send('stty cols 200')
@@ -337,7 +337,7 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 			shutit.login(command='sudo su -',password='vagrant',check_sudo=False)
 			shutit.send('stty cols 200')
 			shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'},timeout=9999999)
-			# TODO scale router to 3 and redeploy
+			# TODO scale router to 3 and redeploy
 			shutit.send('stty cols 65535')
 			# TODO: find a way to determine whether there's a problem, continue if not.
 			shutit.pause_point('Are we done?')
