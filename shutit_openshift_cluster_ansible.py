@@ -215,7 +215,7 @@ end''')
 
 		for machine in machines.keys():
 			shutit_session = shutit_sessions[machine]
-			shutit_session.send('yum -y install git ansible pyOpenSSL python-cryptography python-lxml',background=True,wait=False,block_other_commands=False)
+			shutit_session.send('yum -y install git ansible pyOpenSSL python-cryptography python-lxml java-1.8.0-openjdk-headless patch httpd-tools',background=True,wait=False,block_other_commands=False)
 
 		for machine in sorted(machines.keys()):
 			shutit_session = shutit_sessions[machine]
