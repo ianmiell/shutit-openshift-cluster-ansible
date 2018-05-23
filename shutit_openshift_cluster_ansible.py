@@ -300,6 +300,7 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 			shutit_session.wait()
 		shutit.send('stty cols 200')
 		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'},timeout=9999999)
+		shutit.pause_point('Are we done? If so, quit - try again without rebooting!')
 		while True:
 			shutit.logout()
 			shutit.logout()
@@ -313,7 +314,7 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 			# TODO scale router to 3 and redeploy
 			shutit.send('stty cols 65535')
 			# TODO: find a way to determine whether there's a problem, continue if not.
-			shutit.pause_point('Are we done?')
+			shutit.pause_point('Are we done? If so, quit!')
 		shutit.logout()
 		shutit.logout()
 		################################################################################
