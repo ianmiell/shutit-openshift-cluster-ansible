@@ -7,30 +7,7 @@ from shutit_module import ShutItModule
 
 class shutit_openshift_cluster_ansible(ShutItModule):
 
-
 	def build(self, shutit):
-		shutit.run_script('''#!/bin/bash
-MODULE_NAME=shutit_openshift_cluster_ansible
-rm -rf $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/vagrant_run/*
-if [[ $(command -v VBoxManage) != '' ]]
-then
-	while true
-	do
-		VBoxManage list runningvms | grep ${MODULE_NAME} | awk '{print $1}' | xargs -IXXX VBoxManage controlvm 'XXX' poweroff && VBoxManage list vms | grep shutit_openshift_cluster_ansible | awk '{print $1}'  | xargs -IXXX VBoxManage unregistervm 'XXX' --delete
-		# The xargs removes whitespace
-		if [[ $(VBoxManage list vms | grep ${MODULE_NAME} | wc -l | xargs) -eq '0' ]]
-		then
-			break
-		else
-			ps -ef | grep virtualbox | grep ${MODULE_NAME} | awk '{print $2}' | xargs kill
-			sleep 10
-		fi
-	done
-fi
-#if [[ $(command -v virsh) ]] && [[ $(kvm-ok 2>&1 | command grep 'can be used') != '' ]]
-#then
-#	virsh list | grep ${MODULE_NAME} | awk '{print $1}' | xargs -n1 virsh destroy
-#fi''')
 		vagrant_image = shutit.cfg[self.module_id]['vagrant_image']
 		vagrant_provider = shutit.cfg[self.module_id]['vagrant_provider']
 		gui = shutit.cfg[self.module_id]['gui']
@@ -185,7 +162,7 @@ end''')
 
 		for machine in machines.keys():
 			shutit_session = shutit_sessions[machine]
-			shutit_session.send('yum -y install git ansible pyOpenSSL python-cryptography python-lxml java-1.8.0-openjdk-headless patch httpd-tools',background=True,wait=False,block_other_commands=False)
+			shutit_session.send('yum -y install git ansible pyOpenSSL python-cryptography python-lxml java-1.8.0-openjdk-headless patch httpd-tools atomic-openshift-utils',background=True,wait=False,block_other_commands=False)
 
 		for machine in sorted(machines.keys()):
 			shutit_session = shutit_sessions[machine]
@@ -320,28 +297,41 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 		################################################################################
 		return True
 
+	def upgrade_37_39(self, shutit, shutit_sessions, machines):
+		TODO: comment out 3.7 in inventory
+		for machine in machines.keys():
+			shutit_session = shutit_sessions[machine]
+			# TODO: Check we are on 3.7?
+			shutit_session.send('cd /etc/yum.repos.d')
+			# Turn off 3.7 repos on all hosts, and enable 3.8 AND 3.9
+			shutit_session.send('cp CentOS-OpenShift-Origin37.repo CentOS-OpenShift-Origin38.repo')
+			shutit_session.send('cp CentOS-OpenShift-Origin37.repo CentOS-OpenShift-Origin39.repo')
+			shutit_session.send("""sed -i 's/37/39/g' CentOS-OpenShift-Origin39.repo""")
+			shutit_session.send("""sed -i 's/37/38/g' CentOS-OpenShift-Origin38.repo""")
+			shutit_session.send("""sed -i 's/enabled=1/enabled=0/g' CentOS-OpenShift-Origin37.repo""")
+			# Ensure swap is disabled
+			shutit_session.send('swapoff -a')
+			# Ensure 
+			shutit_session.send('yum install -y atomic-openshift-utils')
+			shutit_session.send('yum update -y atomic-openshift-utils')
+		shutit.login(command='vagrant ssh master1',check_sudo=False)
+		shutit.login(command='sudo su -',password='vagrant',check_sudo=False)
+		# checkout 3.9 cookbook
+		shutit.send('ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/byo/openshift-cluster/upgrades/v3_9/upgrade_control_plane.yml')
+		# For customizing the node upgrade:
+		# https://docs.openshift.com/container-platform/3.9/upgrading/automated_upgrades.html#customizing-node-upgrades
+		shutit.send('ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/byo/openshift-cluster/upgrades/v3_9/upgrade_nodes.yml')
+		# After all master and node upgrades have completed, reboot all hosts. After rebooting, if there are no additional features enabled, you can verify the upgrade. 
+		shutit.logout()
+		shutit.logout()
+   
 
 	def get_config(self, shutit):
 		#shutit.get_config(self.module_id,'vagrant_image',default='centos/7')
 		shutit.get_config(self.module_id,'vagrant_image',default='https://cloud.centos.org/centos/7/vagrant/x86_64/images/CentOS-7-x86_64-Vagrant-1804_02.VirtualBox.box')
 		shutit.get_config(self.module_id,'vagrant_provider',default='virtualbox')
 		shutit.get_config(self.module_id,'gui',default='false')
-		shutit.get_config(self.module_id,'memory',default='1024')
-		return True
-
-	def test(self, shutit):
-		return True
-
-	def finalize(self, shutit):
-		return True
-
-	def is_installed(self, shutit):
-		return False
-
-	def start(self, shutit):
-		return True
-
-	def stop(self, shutit):
+		shutit.get_config(self.module_id,'memory',default='2048')
 		return True
 
 def module():
