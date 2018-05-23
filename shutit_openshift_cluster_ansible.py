@@ -145,14 +145,19 @@ end''')
 		machines.update({'master1':{'fqdn':'master1.vagrant.test'}})
 		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['master1']['fqdn'] + ''' | awk '{print $2}' ''')
 		machines.get('master1').update({'ip':ip})
+
 		machines.update({'master2':{'fqdn':'master2.vagrant.test'}})
 		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['master2']['fqdn'] + ''' | awk '{print $2}' ''')
 		machines.get('master2').update({'ip':ip})
+
+		machines.update({'master3':{'fqdn':'master3.vagrant.test'}})
 		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['master3']['fqdn'] + ''' | awk '{print $2}' ''')
 		machines.get('master3').update({'ip':ip})
+
 		machines.update({'node1':{'fqdn':'node1.vagrant.test'}})
 		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['node1']['fqdn'] + ''' | awk '{print $2}' ''')
 		machines.get('node1').update({'ip':ip})
+
 		machines.update({'node2':{'fqdn':'node2.vagrant.test'}})
 		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['node2']['fqdn'] + ''' | awk '{print $2}' ''')
 		machines.get('node2').update({'ip':ip})
@@ -256,27 +261,27 @@ openshift_clock_enabled=true
 
 # host group for masters
 [masters]
-master1.vagrant.test
-master2.vagrant.test
-master3.vagrant.test
+master1.vagrant.test openshift_ip=''' + machines['master1']['ip'] + '''
+master2.vagrant.test openshift_ip=''' + machines['master2']['ip'] + '''
+master3.vagrant.test openshift_ip=''' + machines['master3']['ip'] + '''
 
 # host group for etcd
 [etcd]
-master1.vagrant.test
-master2.vagrant.test
-master3.vagrant.test
+master1.vagrant.test openshift_ip=''' + machines['master1']['ip'] + '''
+master2.vagrant.test openshift_ip=''' + machines['master2']['ip'] + '''
+master3.vagrant.test openshift_ip=''' + machines['master3']['ip'] + '''
 
 # Specify load balancer host
 [lb]
-master1.vagrant.test
+master1.vagrant.test openshift_ip=''' + machines['master1']['ip'] + '''
 
 # host group for nodes, includes region info
 [nodes]
-master1.vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
-master2.vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
-master3.vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
-node1.vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
-node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"''')
+master1.vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}" openshift_ip=''' + machines['master1']['ip'] + '''
+master2.vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}" openshift_ip=''' + machines['master2']['ip'] + '''
+master3.vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}" openshift_ip=''' + machines['master3']['ip'] + '''
+node1.vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}" openshift_ip=''' + machines['node1']['ip'] + '''
+node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}" openshift_ip=''' + machines['node2']['ip'])
 		# TODO: deprecation_warnings=False in ansible.cfg
 		shutit.send('export ANSIBLE_KEEP_REMOTE_FILES=1') # For debug - see notes
 		shutit.send('stty cols 200')
