@@ -249,6 +249,7 @@ openshift_release=v3.7
 openshift_master_cluster_method=native
 openshift_master_cluster_hostname=master1.vagrant.test
 openshift_master_cluster_public_hostname=master1.vagrant.test
+openshift_hosted_router_replicas=1
 
 # apply updated node defaults
 openshift_node_kubelet_args={'pods-per-core': ['10'], 'max-pods': ['250'], 'image-gc-high-threshold': ['90'], 'image-gc-low-threshold': ['80']}
