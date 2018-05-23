@@ -65,28 +65,12 @@ fi
       v.name = "ansmaster2"
     end
   end
-  config.vm.define "etcd1" do |etcd1|
-    etcd1.vm.box = ''' + '"' + vagrant_image + '"' + '''
-    etcd1.vm.hostname = "etcd1.vagrant.test"
-    etcd1.vm.provider :virtualbox do |v|
-      v.customize ["modifyvm", :id, "--memory", "1024"]
-      v.name = "ansetcd1"
-    end
-  end
-  config.vm.define "etcd2" do |etcd2|
-    etcd2.vm.box = ''' + '"' + vagrant_image + '"' + '''
-    etcd2.vm.hostname = "etcd2.vagrant.test"
-    etcd2.vm.provider :virtualbox do |v|
-      v.customize ["modifyvm", :id, "--memory", "1024"]
-      v.name = "ansetcd2"
-    end
-  end
-  config.vm.define "etcd3" do |etcd3|
-    etcd3.vm.box = ''' + '"' + vagrant_image + '"' + '''
-    etcd3.vm.hostname = "etcd3.vagrant.test"
-    etcd3.vm.provider :virtualbox do |v|
-      v.customize ["modifyvm", :id, "--memory", "1024"]
-      v.name = "ansetcd3"
+  config.vm.define "master3" do |master3|
+    master3.vm.box = ''' + '"' + vagrant_image + '"' + '''
+    master3.vm.hostname = "master3.vagrant.test"
+    master3.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--memory", "2048"]
+      v.name = "ansmaster3"
     end
   end
   config.vm.define "node1" do |node1|
@@ -134,23 +118,11 @@ end''')
 			if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^master2 | awk '{print $2}'""") != 'running':
 				shutit.pause_point("machine: master2 appears not to have come up cleanly")
 			try:
-				shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " etcd1",{'assword for':pw,'assword:':pw},timeout=99999)
+				shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " master3",{'assword for':pw,'assword:':pw},timeout=99999)
 			except NameError:
-				shutit.multisend('vagrant up etcd1',{'assword for':pw,'assword:':pw},timeout=99999)
-			if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^etcd1 | awk '{print $2}'""") != 'running':
-				shutit.pause_point("machine: etcd1 appears not to have come up cleanly")
-			try:
-				shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " etcd2",{'assword for':pw,'assword:':pw},timeout=99999)
-			except NameError:
-				shutit.multisend('vagrant up etcd2',{'assword for':pw,'assword:':pw},timeout=99999)
-			if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^etcd2 | awk '{print $2}'""") != 'running':
-				shutit.pause_point("machine: etcd2 appears not to have come up cleanly")
-			try:
-				shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " etcd3",{'assword for':pw,'assword:':pw},timeout=99999)
-			except NameError:
-				shutit.multisend('vagrant up etcd3',{'assword for':pw,'assword:':pw},timeout=99999)
-			if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^etcd3 | awk '{print $2}'""") != 'running':
-				shutit.pause_point("machine: etcd3 appears not to have come up cleanly")
+				shutit.multisend('vagrant up master3',{'assword for':pw,'assword:':pw},timeout=99999)
+			if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^master3 | awk '{print $2}'""") != 'running':
+				shutit.pause_point("machine: master3 appears not to have come up cleanly")
 			try:
 				shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " node1",{'assword for':pw,'assword:':pw},timeout=99999)
 			except NameError:
@@ -176,15 +148,8 @@ end''')
 		machines.update({'master2':{'fqdn':'master2.vagrant.test'}})
 		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['master2']['fqdn'] + ''' | awk '{print $2}' ''')
 		machines.get('master2').update({'ip':ip})
-		machines.update({'etcd1':{'fqdn':'etcd1.vagrant.test'}})
-		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['etcd1']['fqdn'] + ''' | awk '{print $2}' ''')
-		machines.get('etcd1').update({'ip':ip})
-		machines.update({'etcd2':{'fqdn':'etcd2.vagrant.test'}})
-		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['etcd2']['fqdn'] + ''' | awk '{print $2}' ''')
-		machines.get('etcd2').update({'ip':ip})
-		machines.update({'etcd3':{'fqdn':'etcd3.vagrant.test'}})
-		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['etcd3']['fqdn'] + ''' | awk '{print $2}' ''')
-		machines.get('etcd3').update({'ip':ip})
+		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['master3']['fqdn'] + ''' | awk '{print $2}' ''')
+		machines.get('master3').update({'ip':ip})
 		machines.update({'node1':{'fqdn':'node1.vagrant.test'}})
 		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['node1']['fqdn'] + ''' | awk '{print $2}' ''')
 		machines.get('node1').update({'ip':ip})
@@ -293,12 +258,13 @@ openshift_clock_enabled=true
 [masters]
 master1.vagrant.test
 master2.vagrant.test
+master3.vagrant.test
 
 # host group for etcd
 [etcd]
-etcd1.vagrant.test
-etcd2.vagrant.test
-etcd3.vagrant.test
+master1.vagrant.test
+master2.vagrant.test
+master3.vagrant.test
 
 # Specify load balancer host
 [lb]
@@ -308,8 +274,9 @@ master1.vagrant.test
 [nodes]
 master1.vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
 master2.vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+master3.vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
 node1.vagrant.test openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
-node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
+node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"''')
 		# TODO: deprecation_warnings=False in ansible.cfg
 		shutit.send('export ANSIBLE_KEEP_REMOTE_FILES=1') # For debug - see notes
 		shutit.send('stty cols 200')
