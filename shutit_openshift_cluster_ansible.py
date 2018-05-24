@@ -148,6 +148,10 @@ end''')
 		################################################################################
 
 		root_pass = 'origin'
+		def sync(machines, shutit_sessions):
+			for machine in sorted(machines.keys()):
+				shutit_session = shutit_sessions[machine]
+
 		################################################################################
 		for machine in machines.keys():
 			shutit_session = shutit_sessions[machine]
@@ -156,17 +160,13 @@ end''')
 			shutit_session.login(command='sudo su - ')
 			shutit_session.send('yum install -y net-tools epel-release',background=True,wait=False,block_other_commands=False)
 
-		for machine in sorted(machines.keys()):
-			shutit_session = shutit_sessions[machine]
-			shutit_session.wait()
+		sync()
 
 		for machine in machines.keys():
 			shutit_session = shutit_sessions[machine]
-			shutit_session.send('yum -y install git ansible pyOpenSSL python-cryptography python-lxml java-1.8.0-openjdk-headless patch httpd-tools atomic-openshift-utils',background=True,wait=False,block_other_commands=False)
+			shutit_session.send('yum -y install git ansible pyOpenSSL python-cryptography python-lxml java-1.8.0-openjdk-headless patch httpd-tools atomic-openshift-utils fpaste',background=True,wait=False,block_other_commands=False)
 
-		for machine in sorted(machines.keys()):
-			shutit_session = shutit_sessions[machine]
-			shutit_session.wait()
+		sync()
 
 		for machine in machines.keys():
 			shutit_session = shutit_sessions[machine]
