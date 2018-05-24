@@ -3,6 +3,7 @@ import logging
 import string
 import os
 import inspect
+from future.builtins.misc import input
 from shutit_module import ShutItModule
 
 class shutit_openshift_cluster_ansible(ShutItModule):
@@ -277,7 +278,7 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 			shutit_session.wait()
 		shutit.send('stty cols 200')
 		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'},timeout=9999999)
-		shutit.pause_point('Are we done? If so, quit - try again without rebooting!')
+		# ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/byo/openshift-cluster/redeploy-etcd-ca.yml?
 		while True:
 			shutit.logout()
 			shutit.logout()
@@ -291,7 +292,7 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 			# TODO scale router to 3 and redeploy
 			shutit.send('stty cols 65535')
 			# TODO: find a way to determine whether there's a problem, continue if not.
-			if shutit.shutit_util.get_input('Are we done? y for yes: ') == 'y':
+			if input('Are we done? y for yes: ') == 'y':
 				break
 		self.upgrade_37_39(shutit, shutit_sessions, machines)
 		shutit.logout()
