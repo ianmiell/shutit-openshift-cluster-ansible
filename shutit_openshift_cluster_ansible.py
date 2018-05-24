@@ -67,6 +67,14 @@ class shutit_openshift_cluster_ansible(ShutItModule):
       v.name = "ansnode2"
     end
   end
+  config.vm.define "lb1" do |lb1|
+    lb1.vm.box = ''' + '"' + vagrant_image + '"' + '''
+    lb1.vm.hostname = "lb1.vagrant.test"
+    lb1.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--memory", "1024"]
+      v.name = "anslb1"
+    end
+  end
 end''')
 		################################################################################
 		# Extract password from 'secret' file (which git ignores).
@@ -111,8 +119,14 @@ end''')
 				shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " node2",{'assword for':pw,'assword:':pw},timeout=99999)
 			except NameError:
 				shutit.multisend('vagrant up node2',{'assword for':pw,'assword:':pw},timeout=99999)
+			try:
+				shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " lb1",{'assword for':pw,'assword:':pw},timeout=99999)
 			if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^node2 | awk '{print $2}'""") != 'running':
 				shutit.pause_point("machine: node2 appears not to have come up cleanly")
+			except NameError:
+				shutit.multisend('vagrant up lb1',{'assword for':pw,'assword:':pw},timeout=99999)
+			if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^lb1 | awk '{print $2}'""") != 'running':
+				shutit.pause_point("machine: lb1 appears not to have come up cleanly")
 		vagrant_up(shutit,pw)
 		################################################################################
 
@@ -139,6 +153,10 @@ end''')
 		machines.update({'node2':{'fqdn':'node2.vagrant.test'}})
 		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['node2']['fqdn'] + ''' | awk '{print $2}' ''')
 		machines.get('node2').update({'ip':ip})
+
+		machines.update({'lb1':{'fqdn':'lb1.vagrant.test'}})
+		ip = shutit.send_and_get_output('''vagrant landrush ls 2> /dev/null | grep -w ^''' + machines['lb1']['fqdn'] + ''' | awk '{print $2}' ''')
+		machines.get('lb1').update({'ip':ip})
 		################################################################################
 
 
@@ -197,6 +215,7 @@ end''')
 		################################################################################
 		shutit.login(command='vagrant ssh master1',check_sudo=False)
 		shutit.login(command='sudo su -',password='vagrant',check_sudo=False)
+		shutit.pause_point('Try running atommic-openshift-install and then compare hosts files')
 		shutit.send('git clone -b release-3.7 https://github.com/openshift/openshift-ansible')
 		shutit.send_file('/etc/ansible/hosts','''# Create an OSEv3 group that contains the master, nodes, etcd, and lb groups.
 # The lb group lets Ansible configure HAProxy as the load balancing solution.
@@ -252,7 +271,7 @@ master3.vagrant.test openshift_ip=''' + machines['master3']['ip'] + '''
 
 # Specify load balancer host
 [lb]
-master1.vagrant.test openshift_ip=''' + machines['master1']['ip'] + '''
+lb1.vagrant.test openshift_ip=''' + machines['lb1']['ip'] + '''
 
 # host group for nodes, includes region info
 [nodes]
@@ -281,7 +300,7 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 		# This fails due to some 'etcd wait' challenge.
 		shutit.send('sleep 630')
 		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'},timeout=9999999)
-		shutit.pause_pont('all ok?')
+		shutit.pause_point('all ok?')
 		self.upgrade_37_39(shutit, shutit_sessions, machines)
 		shutit.logout()
 		shutit.logout()
@@ -302,7 +321,6 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 			# Ensure swap is disabled
 			shutit_session.send('swapoff -a')
 			# Ensure 
-			shutit_session.send('yum install -y atomic-openshift-utils')
 			shutit_session.send('yum update -y atomic-openshift-utils')
 		shutit.login(command='vagrant ssh master1',check_sudo=False)
 		shutit.login(command='sudo su -',password='vagrant',check_sudo=False)
