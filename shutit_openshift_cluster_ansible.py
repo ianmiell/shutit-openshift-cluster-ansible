@@ -291,14 +291,15 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 			# TODO scale router to 3 and redeploy
 			shutit.send('stty cols 65535')
 			# TODO: find a way to determine whether there's a problem, continue if not.
-			shutit.pause_point('Are we done? If so, quit!')
+			if shutit.shutit_util.get_input('Are we done? y for yes: ') == 'y':
+				break
+		self.upgrade_37_39(shutit, shutit_sessions, machines)
 		shutit.logout()
 		shutit.logout()
 		################################################################################
 		return True
 
 	def upgrade_37_39(self, shutit, shutit_sessions, machines):
-		TODO: comment out 3.7 in inventory
 		for machine in machines.keys():
 			shutit_session = shutit_sessions[machine]
 			# TODO: Check we are on 3.7?
@@ -316,6 +317,7 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 			shutit_session.send('yum update -y atomic-openshift-utils')
 		shutit.login(command='vagrant ssh master1',check_sudo=False)
 		shutit.login(command='sudo su -',password='vagrant',check_sudo=False)
+		shutit.send("""sed -i 's/openshift_release=v3.7//g' /etc/ansible/hosts""")
 		# checkout 3.9 cookbook
 		shutit.send('ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/byo/openshift-cluster/upgrades/v3_9/upgrade_control_plane.yml')
 		# For customizing the node upgrade:

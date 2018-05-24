@@ -8,6 +8,7 @@ then
 	exit 1
 fi
 yes | destroy_vms.sh
+rm -rf vagrant_run/*
 $SHUTIT build --echo -d bash -m shutit-library/vagrant -m shutit-library/virtualization "$@"
 if [[ $? != 0 ]]
 then
