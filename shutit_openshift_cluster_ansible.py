@@ -161,13 +161,13 @@ end''')
 			shutit_session.login(command='sudo su - ')
 			shutit_session.send('yum install -y net-tools epel-release',background=True,wait=False,block_other_commands=False)
 
-		sync()
+		sync(machines,shutit_sessions)
 
 		for machine in machines.keys():
 			shutit_session = shutit_sessions[machine]
 			shutit_session.send('yum -y install git ansible pyOpenSSL python-cryptography python-lxml java-1.8.0-openjdk-headless patch httpd-tools atomic-openshift-utils fpaste',background=True,wait=False,block_other_commands=False)
 
-		sync()
+		sync(machines,shutit_sessions)
 
 		for machine in machines.keys():
 			shutit_session = shutit_sessions[machine]
