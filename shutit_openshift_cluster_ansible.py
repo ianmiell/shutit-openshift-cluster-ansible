@@ -119,10 +119,10 @@ end''')
 				shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " node2",{'assword for':pw,'assword:':pw},timeout=99999)
 			except NameError:
 				shutit.multisend('vagrant up node2',{'assword for':pw,'assword:':pw},timeout=99999)
-			try:
-				shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " lb1",{'assword for':pw,'assword:':pw},timeout=99999)
 			if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^node2 | awk '{print $2}'""") != 'running':
 				shutit.pause_point("machine: node2 appears not to have come up cleanly")
+			try:
+				shutit.multisend('vagrant up --provider ' + shutit.cfg['shutit-library.virtualization.virtualization.virtualization']['virt_method'] + " lb1",{'assword for':pw,'assword:':pw},timeout=99999)
 			except NameError:
 				shutit.multisend('vagrant up lb1',{'assword for':pw,'assword:':pw},timeout=99999)
 			if shutit.send_and_get_output("""vagrant status 2> /dev/null | grep -w ^lb1 | awk '{print $2}'""") != 'running':
