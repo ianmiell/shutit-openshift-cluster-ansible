@@ -195,9 +195,9 @@ end''')
 			shutit_session.send('systemctl restart sshd')
 			# This is to prevent ansible from getting the 'wrong' ip address for the host from eth0.
 			# See: http://stackoverflow.com/questions/29495704/how-do-you-change-ansible-default-ipv4
-			shutit_session.send('sleep 10 && route add -net 8.8.8.8 netmask 255.255.255.255 eth1')
 			ip_addr = shutit_session.send_and_get_output("""ip -4 route get 8.8.8.8 | head -1 | awk '{print $NF}'""")
 			shutit_session.send(r"""sed -i 's/127.0.0.1\t\(.*\).vagrant.test.*/""" + ip_addr + r"""\t\1.vagrant.test\t\1/' /etc/hosts""")
+			shutit_session.send('sleep 10 && route add -net 8.8.8.8 netmask 255.255.255.255 eth1')
 		################################################################################
 
 		################################################################################
@@ -284,7 +284,8 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 		shutit.send('export ANSIBLE_KEEP_REMOTE_FILES=1') # For debug - see notes
 		shutit.send('stty cols 200')
 		#shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/openshift-preflight/check.yml',{'ontinue connecting':'yes'},timeout=99999)
-		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'},timeout=9999999)
+		shutit.send('cd ~/openshift-ansible')
+		shutit.multisend('ansible-playbook playbooks/byo/config.yml',{'ontinue connecting':'yes'},timeout=9999999)
 		# Now we can install fpaste and atomic-openshift-utils
 		for machine in machines.keys():
 			shutit_session = shutit_sessions[machine]
@@ -300,11 +301,9 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 		for machine in sorted(machines.keys()):
 			shutit_session = shutit_sessions[machine]
 			shutit_session.wait()
-		shutit.send('stty cols 200')
-		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'},timeout=9999999)
-		# This fails due to some 'etcd wait' challenge.
+		shutit.multisend('ansible-playbook playbooks/byo/config.yml',{'ontinue connecting':'yes'},timeout=9999999)
 		shutit.send('sleep 630')
-		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'},timeout=9999999)
+		shutit.multisend('ansible-playbook playbooks/byo/config.yml',{'ontinue connecting':'yes'},timeout=9999999)
 		shutit.pause_point('all ok?')
 		self.upgrade_37_39(shutit, shutit_sessions, machines)
 		shutit.logout()
