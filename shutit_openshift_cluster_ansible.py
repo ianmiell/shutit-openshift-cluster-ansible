@@ -183,7 +183,7 @@ end''')
 
 		for machine in machines.keys():
 			shutit_session = shutit_sessions[machine]
-			shutit_session.send('yum -y install git ansible pyOpenSSL python-cryptography python-lxml java-1.8.0-openjdk-headless patch httpd-tools atomic-openshift-utils fpaste',background=True,wait=False,block_other_commands=False)
+			shutit_session.send('yum -y install git ansible pyOpenSSL python-cryptography python-lxml java-1.8.0-openjdk-headless patch httpd-tools',background=True,wait=False,block_other_commands=False)
 
 		sync(machines,shutit_sessions)
 
@@ -195,7 +195,7 @@ end''')
 			shutit_session.send('systemctl restart sshd')
 			# This is to prevent ansible from getting the 'wrong' ip address for the host from eth0.
 			# See: http://stackoverflow.com/questions/29495704/how-do-you-change-ansible-default-ipv4
-			shutit_session.send('route add -net 8.8.8.8 netmask 255.255.255.255 eth1')
+			shutit_session.send('sleep 10 && route add -net 8.8.8.8 netmask 255.255.255.255 eth1')
 			ip_addr = shutit_session.send_and_get_output("""ip -4 route get 8.8.8.8 | head -1 | awk '{print $NF}'""")
 			shutit_session.send(r"""sed -i 's/127.0.0.1\t\(.*\).vagrant.test.*/""" + ip_addr + r"""\t\1.vagrant.test\t\1/' /etc/hosts""")
 		################################################################################
@@ -285,6 +285,11 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 		shutit.send('stty cols 200')
 		#shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/openshift-preflight/check.yml',{'ontinue connecting':'yes'},timeout=99999)
 		shutit.multisend('ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml',{'ontinue connecting':'yes'},timeout=9999999)
+		# Now we can install fpaste and atomic-openshift-utils
+		for machine in machines.keys():
+			shutit_session = shutit_sessions[machine]
+			shutit_session.send('yum -y install atomic-openshift-utils fpaste vim strace telnet',background=True,wait=False,block_other_commands=False)
+		sync(machines,shutit_sessions)
 		for machine in machines.keys():
 			if machine[:4] == 'etcd':
 				# not on etcd servers
