@@ -170,6 +170,7 @@ end''')
 		def sync(machines, shutit_sessions):
 			for machine in sorted(machines.keys()):
 				shutit_session = shutit_sessions[machine]
+				shutit_session.wait()
 
 		################################################################################
 		for machine in machines.keys():
@@ -197,7 +198,7 @@ end''')
 			# See: http://stackoverflow.com/questions/29495704/how-do-you-change-ansible-default-ipv4
 			ip_addr = shutit_session.send_and_get_output("""ip -4 route get 8.8.8.8 | head -1 | awk '{print $NF}'""")
 			shutit_session.send(r"""sed -i 's/127.0.0.1\t\(.*\).vagrant.test.*/""" + ip_addr + r"""\t\1.vagrant.test\t\1/' /etc/hosts""")
-			shutit_session.send('sleep 10 && route add -net 8.8.8.8 netmask 255.255.255.255 eth1')
+			shutit_session.send('route add -net 8.8.8.8 netmask 255.255.255.255 eth1')
 		################################################################################
 
 		################################################################################
@@ -315,6 +316,7 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 			shutit_session.send('yum update -y atomic-openshift-utils')
 		shutit.login(command='vagrant ssh master1',check_sudo=False)
 		shutit.login(command='sudo su -',password='vagrant',check_sudo=False)
+		shutit.send('stty cols 200')
 		shutit.send("""sed -i 's/openshift_release=v3.7//g' /etc/ansible/hosts""")
 		# checkout 3.9 cookbook
 		shutit.send('ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/byo/openshift-cluster/upgrades/v3_9/upgrade_control_plane.yml')
