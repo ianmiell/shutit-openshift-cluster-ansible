@@ -290,19 +290,6 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 			shutit_session = shutit_sessions[machine]
 			shutit_session.send('yum -y install atomic-openshift-utils fpaste vim strace telnet',background=True,wait=False,block_other_commands=False)
 		sync(machines,shutit_sessions)
-		#for machine in machines.keys():
-		#	if machine[:4] == 'etcd':
-		#		# not on etcd servers
-		#		continue
-		#	shutit_session = shutit_sessions[machine]
-		#	shutit_session.send('origin-docker-excluder unexclude || true')
-		#	shutit_session.send('yum -y install docker',background=True,wait=False,block_other_commands=False)
-		#for machine in sorted(machines.keys()):
-		#	shutit_session = shutit_sessions[machine]
-		#	shutit_session.wait()
-		#shutit.multisend('ansible-playbook playbooks/byo/config.yml',{'ontinue connecting':'yes'},timeout=9999999)
-		#shutit.send('sleep 630')
-		#shutit.multisend('ansible-playbook playbooks/byo/config.yml',{'ontinue connecting':'yes'},timeout=9999999)
 		shutit.pause_point('all ok?')
 		self.upgrade_37_39(shutit, shutit_sessions, machines)
 		shutit.logout()
