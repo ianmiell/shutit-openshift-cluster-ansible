@@ -183,7 +183,7 @@ end''')
 
 		for machine in machines.keys():
 			shutit_session = shutit_sessions[machine]
-			shutit_session.send('yum -y install git ansible pyOpenSSL python-cryptography python-lxml java-1.8.0-openjdk-headless patch httpd-tools',background=True,wait=False,block_other_commands=False)
+			shutit_session.send('yum -y install git ansible pyOpenSSL python-cryptography python-lxml java-1.8.0-openjdk-headless patch httpd-tools etcd iptables',background=True,wait=False,block_other_commands=False)
 
 		sync(machines,shutit_sessions)
 
@@ -289,11 +289,12 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 		for machine in machines.keys():
 			shutit_session = shutit_sessions[machine]
 			shutit_session.send('yum -y install atomic-openshift-utils fpaste vim strace telnet',background=True,wait=False,block_other_commands=False)
+			shutit_session.send('cp -r /etc/origin /etc/origin_37_bak',background=True,wait=False,block_other_commands=False)
 		sync(machines,shutit_sessions)
-		shutit.pause_point('all ok?')
+		shutit.logout()
+		shutit.logout()
+		# upgrade to 39
 		self.upgrade_37_39(shutit, shutit_sessions, machines)
-		shutit.logout()
-		shutit.logout()
 		################################################################################
 		return True
 
