@@ -290,7 +290,7 @@ node2.vagrant.test openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
 		for machine in machines.keys():
 			shutit_session = shutit_sessions[machine]
 			shutit_session.send('yum -y install atomic-openshift-utils fpaste vim strace telnet',background=True,wait=False,block_other_commands=False)
-			shutit_session.send('cp -r /etc/origin /etc/origin_37_bak',background=True,wait=False,block_other_commands=False)
+			shutit_session.send('cp -r /etc/origin /etc/origin_37_bak || true',background=True,wait=False,block_other_commands=False)
 		sync(machines,shutit_sessions)
 		shutit.logout()
 		shutit.logout()
